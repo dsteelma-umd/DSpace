@@ -58,12 +58,9 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
 
         Unit newUnit = unitDAO.create(context, new Unit());
 
-        unitDAO.save(context, newUnit);
+        log.info(LogHelper.getHeader(context, "create_unit", "unit_id=" + newUnit.getID()));
 
         context.addEvent(new Event(Event.CREATE, Constants.UNIT, newUnit.getID(), newUnit.getName()));
-
-        log.info(LogHelper.getHeader(context, "create_unit",
-                "unit_id=" + newUnit.getID()));
 
         return newUnit;
     }
@@ -79,13 +76,13 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
     }
 
     @Override
-    public List<Unit> findAll(Context context) throws SQLException {
-        return unitDAO.findAllSortedByName(context);
+    public List<Unit> findAll(Context context, int pageSize, int offset) throws SQLException {
+        return unitDAO.findAll(context, pageSize, offset);
     }
 
     @Override
     public List<Unit> findAllByGroup(Context context, Group group) throws SQLException {
-      return unitDAO.findAllByGroup(context, group);
+      return unitDAO.findByGroup(context, group);
     }
 
     @Override
@@ -95,26 +92,26 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
 
     @Override
     public List<Unit> search(Context context, String query, int offset, int limit) throws SQLException {
-      return unitDAO.searchByName(context, query, offset, limit);
+      return unitDAO.findByNameLike(context, query, offset, limit);
     }
 
     @Override
     public int searchResultCount(Context context, String query) throws SQLException {
-      return unitDAO.searchByNameResultCount(context, query);
+      return unitDAO.countByNameLike(context, query);
     }
 
-    
+
     @Override
     public void update(Context context, Unit unit) throws SQLException, AuthorizeException {
         // Authorize
         canEdit(context);
 
-        log.info(LogHelper.getHeader(context, "update_unit",
-                "unit_id=" + unit.getID()));
-
         super.update(context, unit);
 
         unitDAO.save(context, unit);
+
+        log.info(LogHelper.getHeader(context, "update_unit", "unit_id=" + unit.getID()));
+
         if (unit.isModified())
         {
             context.addEvent(new Event(Event.MODIFY, Constants.UNIT, unit.getID(), unit.getName()));
@@ -123,12 +120,12 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
         unit.clearDetails();
     }
 
-   
+
     @Override
     public List<Group> getAllGroups(Context context, Unit unit) throws SQLException {
         return unit.getGroups();
     }
-    
+
     @Override
     public void addGroup(Context context, Unit unit, Group group) throws SQLException, AuthorizeException {
          // Authorize
@@ -138,7 +135,7 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
                 "unit_id=" + unit.getID() + ",group_id=" + group.getID()));
 
         unit.addGroup(group);
-        
+
         context.addEvent(new Event(Event.ADD, Constants.UNIT, unit.getID(),
         Constants.COLLECTION, group.getID(), unit.getName()));
     }
@@ -153,7 +150,7 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
                 "unit_id=" + unit.getID() + ",group_id=" + group.getID()));
 
         unit.removeGroup(group);
-        
+
         context.addEvent(new Event(Event.REMOVE, Constants.UNIT, unit.getID(),
         Constants.COLLECTION, group.getID(), unit.getName()));
     }
@@ -163,7 +160,7 @@ public class UnitServiceImpl extends DSpaceObjectServiceImpl<Unit> implements Un
       return unit.isMember(group);
     }
 
-   
+
     @Override
     public void delete(Context context, Unit unit) throws SQLException, AuthorizeException, IOException {
         // Authorize
