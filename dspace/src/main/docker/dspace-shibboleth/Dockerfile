@@ -46,6 +46,7 @@ RUN cd /etc/shibboleth/ \
 
 # Copy over our startup script
 COPY httpd-shibd-foreground.sh /usr/local/bin/
+RUN chmod 755 /usr/local/bin/httpd-shibd-foreground.sh
 
 # Expose HTTP and HTTPS ports for Apache
 EXPOSE 80 443
