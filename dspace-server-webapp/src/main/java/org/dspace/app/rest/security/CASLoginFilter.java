@@ -116,9 +116,11 @@ public class CASLoginFilter extends StatelessLoginFilter {
         // If redirectUrl unspecified, default to the configured UI
         if (StringUtils.isEmpty(redirectUrl)) {
             // TOFIX - redirect to "dspace.ui.uri"?
-            //redirectUrl = configurationService.getProperty("dspace.ui.url");
-            redirectUrl = "http://localhost:8080/server/";// configurationService.getProperty("dspace.server.url");
+            redirectUrl = configurationService.getProperty("dspace.ui.url");
+            // redirectUrl = "http://localhost:8080/server/";// configurationService.getProperty("dspace.server.url");
         }
+
+        // redirectUrl = "https://c38e-72-81-165-251.ngrok.io/server/login.html";
 
         // Validate that the redirectURL matches either the server or UI hostname. It *cannot* be an arbitrary URL.
         String redirectHostName = Utils.getHostName(redirectUrl);

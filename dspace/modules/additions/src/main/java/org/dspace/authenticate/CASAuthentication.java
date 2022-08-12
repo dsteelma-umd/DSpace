@@ -3,6 +3,8 @@ package org.dspace.authenticate;
 import static org.dspace.core.LogHelper.getHeader;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +117,13 @@ public class CASAuthentication implements AuthenticationMethod {
     public int authenticate(Context context, String username, String password, String realm, HttpServletRequest request)
             throws SQLException {
         final String ticket = request.getParameter("ticket");
-        final String service = request.getRequestURL().toString();
+        String service = request.getRequestURL().toString();
+
+        // Append "redirectUrl" query parameter (if present) onto "service"
+        if (request.getParameter("redirectUrl") != null) {
+            service = service + "?redirectUrl="+request.getParameter("redirectUrl");
+        }
+
         log.info(getHeader(context, "login", " ticket: " + ticket));
         log.info(getHeader(context, "login", "service: " + service));
 
@@ -257,8 +265,8 @@ public class CASAuthentication implements AuthenticationMethod {
 
         // String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas"
         //     + ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
-        String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas";
-            //+ ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
+        String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas"
+            + ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
 
         // Determine CAS server URL
         final String authServer = configurationService.getProperty("drum.cas.server.url");
@@ -270,7 +278,68 @@ public class CASAuthentication implements AuthenticationMethod {
         log.info("Return URL: " + returnURL);
 
         // Redirect to CAS server
-        return response.encodeRedirectURL(authServer + "?service=" + returnURL);
+        String result = response.encodeRedirectURL(authServer + "?service=" + returnURL);
+        return result;
+    }
+
+    /*
+     * Returns URL to which to redirect to obtain credentials (either password
+     * prompt or e.g. HTTPS port for client cert.); null means no redirect.
+     *
+     * @param context DSpace context, will be modified (ePerson set) upon
+     * success.
+     *
+     * @param request The HTTP request that started this operation, or null if
+     * not applicable.
+     *
+     * @param response The HTTP response from the servlet method.
+     *
+     * @return fully-qualified URL
+     */
+    public String loginPageURL2(Context context, HttpServletRequest request, HttpServletResponse response) {
+        String casURL = getCasURL(request);
+
+        // Determine the client redirect URL, where to redirect after authenticating.
+        String redirectUrl = null;
+        if (request.getHeader("Referer") != null && StringUtils.isNotBlank(request.getHeader("Referer"))) {
+            redirectUrl = request.getHeader("Referer");
+        } else if (request.getHeader("X-Requested-With") != null
+            && StringUtils.isNotBlank(request.getHeader("X-Requested-With"))) {
+            redirectUrl = request.getHeader("X-Requested-With");
+        }
+
+        // Determine the server return URL, where CAS will send the user after authenticating.
+        // We need it to trigger the CASLoginFilter in order to extract the user's information,
+        // locally authenticate them & then redirect back to the UI.
+        String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas"
+        + ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
+
+        // // String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas"
+        // //     + ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
+        // String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas";
+        //     //+ ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
+
+//        // Determine CAS server URL
+//        final String authServer = configurationService.getProperty("drum.cas.server.url");
+//        final String origUrl = (String) request.getSession().getAttribute("interrupted.request.url");
+//        // final String service = (origUrl != null ? origUrl : request.getRequestURL().toString())
+//        // .replace("login", "cas-login");
+//        log.info("CAS server:  " + authServer);
+//        //log.info("service URL: " + service);
+//        log.info("Return URL: " + returnURL);
+//
+//        // Redirect to CAS server
+//        return response.encodeRedirectURL(authServer + "?service=" + returnURL);
+
+        try {
+          casURL += "?service=" + URLEncoder.encode(returnURL, "UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+          log.error("Unable to generate CAS authentication",uee);
+        }
+
+        log.debug("Redirecting user to CAS initiator: " + casURL);
+
+        return response.encodeRedirectURL(casURL);
     }
 
     @Override
@@ -316,4 +385,10 @@ public class CASAuthentication implements AuthenticationMethod {
 
         return eperson;
     }
+
+    private String getCasURL(HttpServletRequest request) {
+      String casURL = configurationService.getProperty("drum.cas.server.url");
+      return casURL;
+
+  }
 }

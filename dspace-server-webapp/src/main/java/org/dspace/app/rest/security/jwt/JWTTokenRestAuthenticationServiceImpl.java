@@ -245,12 +245,12 @@ public class JWTTokenRestAuthenticationServiceImpl implements RestAuthentication
         // as the UI (or Hal Browser) obtains the Shibboleth login data, it makes a call to /login (addCookie=false)
         // which destroys this temporary auth cookie. So, the auth cookie only exists a few seconds.
         if (addCookie) {
-            // ResponseCookie cookie = ResponseCookie.from(AUTHORIZATION_COOKIE, token)
-            //                                       .httpOnly(true).secure(true).sameSite("None").build();
+            ResponseCookie cookie = ResponseCookie.from(AUTHORIZATION_COOKIE, token)
+                                                  .httpOnly(true).secure(true).sameSite("None").build();
 
-            ResponseCookieBuilder cookieBuilder = ResponseCookie.from(AUTHORIZATION_COOKIE, token)
-                                                  .httpOnly(true).secure(true).sameSite("None").path("/");
-            ResponseCookie cookie = cookieBuilder.build();
+            // ResponseCookieBuilder cookieBuilder = ResponseCookie.from(AUTHORIZATION_COOKIE, token)
+            //                                       .httpOnly(true).secure(true).sameSite("None").path("/");
+            // ResponseCookie cookie = cookieBuilder.build();
 
             // Write the cookie to the Set-Cookie header in order to send it
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
