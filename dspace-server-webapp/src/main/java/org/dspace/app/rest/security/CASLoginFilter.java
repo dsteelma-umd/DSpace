@@ -74,7 +74,7 @@ public class CASLoginFilter extends StatelessLoginFilter {
 
         // In the case of CAS, this method does NOT actually authenticate us. The authentication
         // has already happened in CAS. So, this call to "authenticate()" is just triggering
-        // ShibAuthentication.authenticate() to check for a valid CAS login, and if found, the current user
+        // CASAuthentication.authenticate() to check for a valid CAS login, and if found, the current user
         // is considered authenticated via CAS.
         // NOTE: because this authentication is implicit, we pass in an empty DSpaceAuthentication
         return authenticationManager.authenticate(new DSpaceAuthentication());
@@ -115,7 +115,9 @@ public class CASLoginFilter extends StatelessLoginFilter {
 
         // If redirectUrl unspecified, default to the configured UI
         if (StringUtils.isEmpty(redirectUrl)) {
-            redirectUrl = configurationService.getProperty("dspace.ui.url");
+            // TOFIX - redirect to "dspace.ui.uri"?
+            //redirectUrl = configurationService.getProperty("dspace.ui.url");
+            redirectUrl = "http://localhost:8080/server/";// configurationService.getProperty("dspace.server.url");
         }
 
         // Validate that the redirectURL matches either the server or UI hostname. It *cannot* be an arbitrary URL.

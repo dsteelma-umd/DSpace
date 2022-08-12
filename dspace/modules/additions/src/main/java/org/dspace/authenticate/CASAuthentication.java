@@ -58,6 +58,7 @@ public class CASAuthentication implements AuthenticationMethod {
     protected EPersonService ePersonService = EPersonServiceFactory.getInstance().getEPersonService();
 
     public final static String CAS_USER = "dspace.current.user.ldap";
+    private static final String CAS_AUTHENTICATED = "cas.authenticated";
 
     private final static ConfigurationService configurationService =
         DSpaceServicesFactory.getInstance().getConfigurationService();
@@ -157,6 +158,7 @@ public class CASAuthentication implements AuthenticationMethod {
                     }
 
                     // Logged in OK.
+                    request.setAttribute(CAS_AUTHENTICATED, true);
 
                     context.setCurrentUser(eperson);
                     log.info(getHeader(context, "authenticate", "type=CAS"));
@@ -252,6 +254,9 @@ public class CASAuthentication implements AuthenticationMethod {
         // Determine the server return URL, where CAS will send the user after authenticating.
         // We need it to trigger the CASLoginFilter in order to extract the user's information,
         // locally authenticate them & then redirect back to the UI.
+
+        // String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas"
+        //     + ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
         String returnURL = configurationService.getProperty("dspace.server.url") + "/api/authn/cas";
             //+ ((redirectUrl != null) ? "?redirectUrl=" + redirectUrl : "");
 
@@ -275,7 +280,10 @@ public class CASAuthentication implements AuthenticationMethod {
 
     @Override
     public boolean isUsed(Context context, HttpServletRequest request) {
-        return true;
+        if (request != null && context.getCurrentUser() != null && request.getAttribute(CAS_AUTHENTICATED) != null) {
+            return true;
+        }
+        return false;
     }
 
     protected EPerson createEperson(Context context, HttpServletRequest request, String netid, String email,
