@@ -19,10 +19,12 @@
     <submission-map>
         <!-- Default submission process -->
         <name-map collection-handle="default" submission-name="traditional"/>
+        <!-- Customization for LIBDRUM-681 -->
+        <name-map collection-handle="1903/11324" submission-name="LibraryAward" />
+        <!-- End Customization for LIBDRUM-681 -->
         <!-- Customization for LIBDRUM-696 - Commenting out LIBDRUM-347 and
              LIBDRUM-581 customiations until DSpace 7 implementations are
              available.
-        <name-map collection-handle="1903/11324" submission-name="LibraryAward" />
         <name-map collection-handle="1903/21769" submission-name="MHHEA_Collection" /> -->
 
         <!-- Sample Entities Collection configuration based on the demo Entities dataset available at:
@@ -140,6 +142,37 @@
             <processing-class>org.dspace.app.rest.submit.step.UploadStep</processing-class>
             <type>upload</type>
         </step-definition>
+
+        <step-definition id="uploadLibraryAwardApplicationForm">
+            <heading>submit.progressbar.upload.libraryaward.applicationform</heading>
+            <processing-class>org.dspace.app.rest.submit.step.UploadStep</processing-class>
+            <type>upload</type>
+        </step-definition>
+
+        <step-definition id="uploadLibraryAwardEssay">
+            <heading>submit.progressbar.upload.libraryaward.essay</heading>
+            <processing-class>org.dspace.app.rest.submit.step.UploadStep</processing-class>
+            <type>upload</type>
+        </step-definition>
+
+        <step-definition id="uploadLibraryAwardResearchPaper">
+            <heading>submit.progressbar.upload.libraryaward.researchpaper</heading>
+            <processing-class>org.dspace.app.rest.submit.step.UploadStep</processing-class>
+            <type>upload</type>
+        </step-definition>
+
+        <step-definition id="uploadLibraryAwardBibliography">
+            <heading>submit.progressbar.upload.libraryaward.bibliography</heading>
+            <processing-class>org.dspace.app.rest.submit.step.UploadStep</processing-class>
+            <type>upload</type>
+        </step-definition>
+
+        <step-definition id="uploadLibraryAwardLetterOfSupport">
+            <heading>submit.progressbar.upload.libraryaward.letterofsupport</heading>
+            <processing-class>org.dspace.app.rest.submit.step.UploadStep</processing-class>
+            <type>upload</type>
+        </step-definition>
+
         <step-definition id="license">
             <heading>submit.progressbar.license</heading>
             <processing-class>org.dspace.app.rest.submit.step.LicenseStep</processing-class>
@@ -285,6 +318,30 @@
             <step id="license"/>
         </submission-process>
 
+        <!-- Customization for LIBDRUM-681 -->
+        <!--This "LibraryAward" process defines the "Library Award for Undergraduate Research" collection item submission process -->
+        <submission-process name="LibraryAward">
+            <!--Uncommment to display the SAMPLE step as your first step -->
+            <!--<step id="sample"/> -->
+
+            <step id="collection"/>
+
+            <!--Step will be to Describe the item. -->
+            <step id="traditionalpageone"/>
+            <step id="traditionalpagetwo"/>
+
+            <!--Steps will be to Upload the item -->
+            <step id="uploadLibraryAwardApplicationForm"/>
+            <step id="uploadLibraryAwardEssay"/>
+            <step id="uploadLibraryAwardResearchPaper"/>
+            <step id="uploadLibraryAwardBibliography"/>
+            <step id="uploadLibraryAwardLetterOfSupport"/>
+
+            <!--Step will be to Sign off on the required DSpace License agreement -->
+            <step id="license"/>
+        </submission-process>
+
+        <!-- End Customization for LIBDRUM-681 -->
         <!-- Customization for LIBDRUM-347 -->
         <!--This "LibraryAward" process defines the DEFAULT item submission process -->
         <!-- Commented out for LIBDRUM-696, until DSpace 7 implementation is available.
