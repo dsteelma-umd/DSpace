@@ -1,0 +1,104 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
+package org.dspace.app.rest.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
+
+import org.dspace.app.rest.RestResourceController;
+import org.dspace.eperson.Group;
+
+/**
+ * The Group REST Resource
+ *
+ * @author Andrea Bollini (andrea.bollini at 4science.it)
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class LdapInfoRest extends DSpaceObjectRest {
+    public static final String NAME = "ldap";
+    public static final String CATEGORY = RestAddressableModel.EPERSON;
+
+    public static final String EPERSONS = "epersons";
+    public static final String OBJECT = "object";
+
+    private String name;
+
+    @Override
+    public String getCategory() {
+        return CATEGORY;
+    }
+
+    @Override
+    public String getType() {
+        return NAME;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    @JsonIgnore
+    public Class getController() {
+        return RestResourceController.class;
+    }
+
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private Boolean isFaculty;
+    private List<String> umAppointments;
+    // private List<Unit> units;
+    private List<Group> groups;
+
+    public String getFirstName() {
+      return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+      this.firstName = firstName;
+    }
+
+    public String getLastName() {
+      return lastName;
+    }
+
+    public void setLastName(String lastName) {
+      this.lastName = lastName;
+    }
+
+    public String getPhone() {
+      return phone;
+    }
+
+    public void setPhone(String phone) {
+      this.phone = phone;
+    }
+
+    public Boolean getIsFaculty() {
+      return isFaculty;
+    }
+
+    public void setIsFaculty(Boolean isFaculty) {
+      this.isFaculty = isFaculty;
+    }
+
+    public List<String> getUmAppointments() {
+      return umAppointments;
+    }
+
+    public void setUmAppointments(List<String> umAppointments) {
+      this.umAppointments = umAppointments;
+    }
+}

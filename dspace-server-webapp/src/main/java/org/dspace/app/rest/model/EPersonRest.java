@@ -23,6 +23,10 @@ import org.dspace.app.rest.RestResourceController;
         @LinkRest(
                 name = EPersonRest.GROUPS,
                 method = "getGroups"
+        ),
+        @LinkRest(
+                name = EPersonRest.LDAP,
+                method = "getLdapInfo"
         )
 })
 public class EPersonRest extends DSpaceObjectRest {
@@ -30,6 +34,8 @@ public class EPersonRest extends DSpaceObjectRest {
     public static final String CATEGORY = RestAddressableModel.EPERSON;
 
     public static final String GROUPS = "groups";
+
+    public static final String LDAP = "ldap";
 
     private String netid;
 
