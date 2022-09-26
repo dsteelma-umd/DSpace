@@ -72,6 +72,7 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
                 ldapInfoRest.setFirstName(ldapInfo.getFirstName());
                 ldapInfoRest.setLastName(ldapInfo.getLastName());
                 ldapInfoRest.setPhone(ldapInfo.getPhone());
+                ldapInfoRest.setEmail(ldapInfo.getEmail());
 
                 ldapInfoRest.setIsFaculty(ldapInfo.isFaculty());
                 ldapInfoRest.setUmAppointments(ldapInfo.getAttributeAll("umappointment"));

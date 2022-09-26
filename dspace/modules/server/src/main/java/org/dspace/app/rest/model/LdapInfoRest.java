@@ -58,6 +58,7 @@ public class LdapInfoRest extends DSpaceObjectRest {
     private String lastName;
     private String phone;
     private Boolean isFaculty;
+    private String email;
     private List<String> umAppointments;
     // private List<Unit> units;
     private List<Group> groups;
@@ -84,6 +85,14 @@ public class LdapInfoRest extends DSpaceObjectRest {
 
     public void setPhone(String phone) {
       this.phone = phone;
+    }
+
+    public String getEmail() {
+      return email;
+    }
+
+    public void setEmail(String email) {
+      this.email = email;
     }
 
     public Boolean getIsFaculty() {
