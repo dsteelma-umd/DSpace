@@ -22,7 +22,7 @@ import org.dspace.eperson.Group;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LdapInfoRest extends DSpaceObjectRest {
-    public static final String NAME = "ldap";
+    public static final String NAME = "ldap-info";
     public static final String CATEGORY = RestAddressableModel.EPERSON;
 
     public static final String EPERSONS = "epersons";

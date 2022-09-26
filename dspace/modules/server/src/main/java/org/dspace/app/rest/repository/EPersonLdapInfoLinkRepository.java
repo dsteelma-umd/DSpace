@@ -32,12 +32,12 @@ import edu.umd.lib.dspace.authenticate.impl.LdapImpl;
 import edu.umd.lib.dspace.authenticate.impl.LdapInfo;
 
 /**
- * Link repository for the direct "LDAP" subresource of an individual eperson.
+ * Link repository for the direct LdapInfo subresource of an individual eperson.
  */
-@Component(EPersonRest.CATEGORY + "." + EPersonRest.NAME + "." + EPersonRest.LDAP)
-public class EPersonLdapLinkRepository extends AbstractDSpaceRestRepository
+@Component(EPersonRest.CATEGORY + "." + EPersonRest.NAME + "." + EPersonRest.LDAP_INFO)
+public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
         implements LinkRestRepository {
-    private static final Logger log = LoggerFactory.getLogger(EPersonLdapLinkRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(EPersonLdapInfoLinkRepository.class);
 
     @Autowired
     EPersonService epersonService;

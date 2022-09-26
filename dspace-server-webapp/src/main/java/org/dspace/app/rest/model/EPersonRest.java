@@ -25,7 +25,7 @@ import org.dspace.app.rest.RestResourceController;
                 method = "getGroups"
         ),
         @LinkRest(
-                name = EPersonRest.LDAP,
+                name = EPersonRest.LDAP_INFO,
                 method = "getLdapInfo"
         )
 })
@@ -35,7 +35,7 @@ public class EPersonRest extends DSpaceObjectRest {
 
     public static final String GROUPS = "groups";
 
-    public static final String LDAP = "ldap";
+    public static final String LDAP_INFO = "ldap-info";
 
     private String netid;
 
