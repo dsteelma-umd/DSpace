@@ -95,7 +95,7 @@ public class LdapImpl implements Ldap {
             sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
             // Search
-            NamingEnumeration entries = ctx.search("", strFilter, sc);
+            NamingEnumeration<SearchResult> entries = ctx.search("", strFilter, sc);
 
             // Make sure we got something
             if (entries == null) {

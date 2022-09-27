@@ -47,9 +47,9 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
 
     @PreAuthorize("hasPermission(#epersonId, 'EPERSON', 'READ')")
     public LdapInfoRest getLdapInfo(@Nullable HttpServletRequest request,
-                                     UUID epersonId,
-                                     @Nullable Pageable optionalPageable,
-                                     Projection projection) {
+            UUID epersonId,
+            @Nullable Pageable optionalPageable,
+            Projection projection) {
         try {
             Context context = obtainContext();
             EPerson eperson = epersonService.find(context, epersonId);
@@ -59,14 +59,20 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
 
             String netId = eperson.getNetid();
             if (netId == null) {
-              return null;
+                return null;
             }
 
-            try {
-              Ldap ldap = new LdapImpl(context);
-              LdapInfo ldapInfo = ldap.queryLdap(netId);
+            try (Ldap ldap = new LdapImpl(context)) {
+                log.debug("Querying LDAP for netId={}", netId);
+                LdapInfo ldapInfo = ldap.queryLdap(netId);
 
-              if (ldapInfo != null) {
+                if (ldapInfo == null) {
+                    log.debug("No LDAP information found for netId={}", netId);
+                    return null;
+                }
+
+                log.debug("LDAP information found for netID={}", netId);
+
                 LdapInfoRest ldapInfoRest = new LdapInfoRest();
 
                 ldapInfoRest.setFirstName(ldapInfo.getFirstName());
@@ -77,18 +83,13 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
                 ldapInfoRest.setIsFaculty(ldapInfo.isFaculty());
                 ldapInfoRest.setUmAppointments(ldapInfo.getAttributeAll("umappointment"));
                 return ldapInfoRest;
-              }
-            } catch(NamingException ne) {
-              log.error("Exception accessing LDAP. netId="+netId, ne);
-              return null;
+            } catch (NamingException ne) {
+                log.error("Exception accessing LDAP. netId=" + netId, ne);
+                return null;
             }
-
-            //return converter.toRest(eperson.getGroups(), projection);
-            return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
 
 }
