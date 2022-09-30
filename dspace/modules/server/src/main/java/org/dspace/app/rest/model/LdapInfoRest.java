@@ -62,58 +62,58 @@ public class LdapInfoRest extends DSpaceObjectRest {
     private List<String> umAppointments;
 
     public String getFirstName() {
-      return firstName;
+        return firstName;
     }
 
     public void setFirstName(String firstName) {
-      this.firstName = firstName;
+        this.firstName = firstName;
     }
 
     public String getLastName() {
-      return lastName;
+        return lastName;
     }
 
     public void setLastName(String lastName) {
-      this.lastName = lastName;
+        this.lastName = lastName;
     }
 
     public String getPhone() {
-      return phone;
+        return phone;
     }
 
     public void setPhone(String phone) {
-      this.phone = phone;
+        this.phone = phone;
     }
 
     public String getEmail() {
-      return email;
+        return email;
     }
 
     public void setEmail(String email) {
-      this.email = email;
+        this.email = email;
     }
 
     public Boolean getIsFaculty() {
-      return isFaculty;
+        return isFaculty;
     }
 
     public void setIsFaculty(Boolean isFaculty) {
-      this.isFaculty = isFaculty;
+        this.isFaculty = isFaculty;
     }
 
     public List<String> getUmAppointments() {
-      return umAppointments;
+        return umAppointments;
     }
 
     public void setUmAppointments(List<String> umAppointments) {
-      this.umAppointments = umAppointments;
+        this.umAppointments = umAppointments;
     }
 
     public void setGroups(List<GroupRest> groupList) {
-      this.groups = groupList;
-  }
+        this.groups = groupList;
+    }
 
-  public List<GroupRest> getGroups() {
-      return groups;
-  }
+    public List<GroupRest> getGroups() {
+        return groups;
+    }
 }
