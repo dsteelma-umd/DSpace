@@ -8,12 +8,16 @@
 package org.dspace.app.rest.repository;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dspace.app.rest.model.EPersonRest;
+import org.dspace.app.rest.model.GroupRest;
 import org.dspace.app.rest.model.LdapInfoRest;
 import org.dspace.app.rest.projection.Projection;
 import org.dspace.core.Context;
@@ -82,6 +86,9 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
 
                 ldapInfoRest.setIsFaculty(ldapInfo.isFaculty());
                 ldapInfoRest.setUmAppointments(ldapInfo.getAttributeAll("umappointment"));
+                List<GroupRest> groupList = ldapInfo.getGroups(context).stream()
+                    .map(g -> (GroupRest) converter.toRest(g, projection)).collect(Collectors.toList());
+                ldapInfoRest.setGroups(groupList);
                 return ldapInfoRest;
             } catch (NamingException ne) {
                 log.error("Exception accessing LDAP. netId=" + netId, ne);

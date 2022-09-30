@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 import org.dspace.app.rest.RestResourceController;
-import org.dspace.eperson.Group;
 
 /**
  * The Group REST Resource
@@ -29,6 +28,7 @@ public class LdapInfoRest extends DSpaceObjectRest {
     public static final String OBJECT = "object";
 
     private String name;
+    private List<GroupRest> groups;
 
     @Override
     public String getCategory() {
@@ -60,8 +60,6 @@ public class LdapInfoRest extends DSpaceObjectRest {
     private Boolean isFaculty;
     private String email;
     private List<String> umAppointments;
-    // private List<Unit> units;
-    private List<Group> groups;
 
     public String getFirstName() {
       return firstName;
@@ -110,4 +108,12 @@ public class LdapInfoRest extends DSpaceObjectRest {
     public void setUmAppointments(List<String> umAppointments) {
       this.umAppointments = umAppointments;
     }
+
+    public void setGroups(List<GroupRest> groupList) {
+      this.groups = groupList;
+  }
+
+  public List<GroupRest> getGroups() {
+      return groups;
+  }
 }
