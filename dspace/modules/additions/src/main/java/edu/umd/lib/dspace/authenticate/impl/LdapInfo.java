@@ -17,6 +17,9 @@ import org.dspace.eperson.factory.EPersonServiceFactory;
 import org.dspace.eperson.service.UnitService;
 import org.dspace.core.Context;
 
+/**
+ * LDAP information for a single user
+ */
 public class LdapInfo {
     private String strUid;
     private SearchResult entry;
@@ -152,7 +155,11 @@ public class LdapInfo {
         return false;
     }
 
-    public List<Unit> getUnits(Context context) throws NamingException, java.sql.SQLException {
+    /**
+     * Returns a List of Units in DSpace that match the LDAP organizational
+     * units of the user
+     */
+    public List<Unit> getMatchedUnits(Context context) throws NamingException, java.sql.SQLException {
         List<Unit> units = new ArrayList<>();
         for (Iterator<String> i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
             String strUnit = (String) i.next();
@@ -166,7 +173,11 @@ public class LdapInfo {
         return units;
     }
 
-    public List<String> getAdditionalUnits(Context context) throws NamingException, java.sql.SQLException {
+    /**
+     * Returns a List of String representing the LDAP organizational units for
+     * the user that do not have a corresponding DSpace Unit.
+     */
+    public List<String> getUnmatchedUnits(Context context) throws NamingException, java.sql.SQLException {
         List<String> additionalUnits = new ArrayList<>();
         for (Iterator<String> i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
             String strUnit = (String) i.next();

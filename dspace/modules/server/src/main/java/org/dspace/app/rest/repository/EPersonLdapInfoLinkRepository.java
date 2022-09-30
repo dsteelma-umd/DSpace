@@ -92,11 +92,11 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
                     .map(g -> (GroupRest) converter.toRest(g, projection)).collect(Collectors.toList());
                 ldapInfoRest.setGroups(groupList);
 
-                List<UnitRest> unitList = ldapInfo.getUnits(context).stream()
+                List<UnitRest> matchedUnitsList = ldapInfo.getMatchedUnits(context).stream()
                     .map(u -> (UnitRest) converter.toRest(u, projection)).collect(Collectors.toList());
-                ldapInfoRest.setUnits(unitList);
+                ldapInfoRest.setMatchedUnits(matchedUnitsList);
 
-                ldapInfoRest.setAdditionalUnits(ldapInfo.getAdditionalUnits(context));
+                ldapInfoRest.setUnmatchedUnits(ldapInfo.getUnmatchedUnits(context));
 
                 return ldapInfoRest;
             } catch (NamingException ne) {
