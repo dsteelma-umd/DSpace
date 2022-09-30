@@ -152,14 +152,27 @@ public class LdapInfo {
         return false;
     }
 
+    public List<Unit> getUnits(Context context) throws NamingException, java.sql.SQLException {
+        List<Unit> units = new ArrayList<>();
+        for (Iterator<String> i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
+            String strUnit = (String) i.next();
+
+            Unit unit = unitService.findByName(context, strUnit);
+
+            if (unit != null) {
+                units.add(unit);
+            }
+        }
+        return units;
+    }
     /************************************************************* getGroups */
     /**
      * Groups mapped by the Units for faculty.
      */
     public List<Group> getGroups(Context context) throws NamingException, java.sql.SQLException {
-        HashSet<Group> ret = new HashSet();
+        HashSet<Group> ret = new HashSet<>();
 
-        for (Iterator i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
+        for (Iterator<String> i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
             String strUnit = (String) i.next();
 
             Unit unit = unitService.findByName(context, strUnit);

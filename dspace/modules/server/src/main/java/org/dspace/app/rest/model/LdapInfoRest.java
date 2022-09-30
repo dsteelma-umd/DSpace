@@ -29,6 +29,7 @@ public class LdapInfoRest extends DSpaceObjectRest {
 
     private String name;
     private List<GroupRest> groups;
+    private List<UnitRest> units;
 
     @Override
     public String getCategory() {
@@ -115,5 +116,13 @@ public class LdapInfoRest extends DSpaceObjectRest {
 
     public List<GroupRest> getGroups() {
         return groups;
+    }
+
+    public void setUnits(List<UnitRest> unitList) {
+        this.units = unitList;
+    }
+
+    public List<UnitRest> getUnits() {
+        return units;
     }
 }
