@@ -165,6 +165,21 @@ public class LdapInfo {
         }
         return units;
     }
+
+    public List<String> getAdditionalUnits(Context context) throws NamingException, java.sql.SQLException {
+        List<String> additionalUnits = new ArrayList<>();
+        for (Iterator<String> i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
+            String strUnit = (String) i.next();
+
+            Unit unit = unitService.findByName(context, strUnit);
+
+            if (unit == null) {
+                additionalUnits.add(strUnit);
+            }
+        }
+        return additionalUnits;
+    }
+
     /************************************************************* getGroups */
     /**
      * Groups mapped by the Units for faculty.

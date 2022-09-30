@@ -95,6 +95,9 @@ public class EPersonLdapInfoLinkRepository extends AbstractDSpaceRestRepository
                 List<UnitRest> unitList = ldapInfo.getUnits(context).stream()
                     .map(u -> (UnitRest) converter.toRest(u, projection)).collect(Collectors.toList());
                 ldapInfoRest.setUnits(unitList);
+
+                ldapInfoRest.setAdditionalUnits(ldapInfo.getAdditionalUnits(context));
+
                 return ldapInfoRest;
             } catch (NamingException ne) {
                 log.error("Exception accessing LDAP. netId=" + netId, ne);
