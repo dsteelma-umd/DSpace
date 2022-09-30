@@ -101,9 +101,9 @@ public class LdapInfo {
 
     /************************************************************** getUnits */
     /**
-     * organization units
+     * LDAP organizational units
      */
-    public List<String> getUnits() throws NamingException {
+    protected List<String> getLdapOrganizationalUnits() throws NamingException {
         return getAttributeAll("ou");
     }
 
@@ -159,7 +159,7 @@ public class LdapInfo {
     public List<Group> getGroups(Context context) throws NamingException, java.sql.SQLException {
         HashSet<Group> ret = new HashSet();
 
-        for (Iterator i = getUnits().iterator(); i.hasNext();) {
+        for (Iterator i = getLdapOrganizationalUnits().iterator(); i.hasNext();) {
             String strUnit = (String) i.next();
 
             Unit unit = unitService.findByName(context, strUnit);
