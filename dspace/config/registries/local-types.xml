@@ -5,7 +5,7 @@
   - An empty registry for instance-specific, local metadata. Any non-standard
   - metadata fields should be added here to avoid polluting the standard
   - namespaces.
-  - 
+  -
   -->
 <dspace-dc-types>
 
@@ -23,13 +23,11 @@
     <namespace>http://dspace.org/namespace/local/</namespace>
   </dc-schema>
 
-<!--
   <dc-type>
     <schema>local</schema>
-    <element></element>
+    <element>equitableAccessSubmission</element>
     <qualifier></qualifier>
-    <scope_note>Description of example metadata field.</scope_note>
+    <scope_note>Indicates whether item is being submitted in compliance with the UMD "Equitable Access" policy</scope_note>
   </dc-type>
--->
 
 </dspace-dc-types>
