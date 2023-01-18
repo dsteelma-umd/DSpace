@@ -18,7 +18,7 @@
     <!-- for handle "default". -->
     <submission-map>
         <!-- Default submission process -->
-        <name-map collection-handle="default" submission-name="traditional"/>
+        <name-map collection-handle="default" submission-name="umd-submission"/>
         <!-- Customization for LIBDRUM-696 - Commenting out LIBDRUM-347 and
              LIBDRUM-581 customizations until DSpace 7 implementations are
              available.
@@ -29,6 +29,8 @@
              for  "Minority Health and Health Equity Archive" collection -->
         <name-map collection-handle="1903/21769" submission-name="MHHEA_Collection" />
         <!-- End Customization for LIBDRUM-684 -->
+
+        <name-map collection-handle="1903/27670" submission-name="umd-submission-with-cc-license" />
 
         <!-- Sample Entities Collection configuration based on the demo Entities dataset available at:
              https://github.com/DSpace-Labs/AIP-Files/releases/tag/demo-entities-data
@@ -248,6 +250,12 @@
           <type>submission-form</type>
           <scope>submission</scope>
         </step-definition>
+
+        <step-definition id="umdDescribe" mandatory="true">
+            <heading>submit.progressbar.describe.stepone</heading>
+            <processing-class>org.dspace.app.rest.submit.step.DescribeStep</processing-class>
+            <type>submission-form</type>
+        </step-definition>
         <!-- End Customization for LIBDRUM-711 -->
 
         <step-definition id="sherpaPolicies" mandatory="true">
@@ -280,6 +288,31 @@
     <!-- -->
     <!-- -->
     <submission-definitions>
+
+        <submission-process name="umd-submission">
+            <step id="collection"/>
+
+            <!-- Customizaton for LIBDRUM-711 -->
+            <step id="equitableAccessSubmission"/>
+            <!-- End Customization for LIBDRUM-711 -->
+
+            <step id="umdDescribe"/>
+            <step id="upload"/>
+            <step id="license"/>
+        </submission-process>
+
+        <submission-process name="umd-submission-with-cc-license">
+            <step id="collection"/>
+
+            <!-- Customizaton for LIBDRUM-711 -->
+            <step id="equitableAccessSubmission"/>
+            <!-- End Customization for LIBDRUM-711 -->
+
+            <step id="umdDescribe"/>
+            <step id="upload"/>
+            <step id="cclicense"/>
+            <step id="license"/>
+        </submission-process>
 
         <!--This "traditional" process defines the DEFAULT item submission process -->
         <submission-process name="traditional">

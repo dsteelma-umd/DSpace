@@ -215,8 +215,9 @@ public class DCInput {
         // parsing of the <type-bind> element (using the colon as split separator)
         typeBind = new ArrayList<>();
         String typeBindDef = fieldMap.get("type-bind");
+        String typeBindSeparator = fieldMap.getOrDefault("type-bind-separator", ",");
         if (typeBindDef != null && typeBindDef.trim().length() > 0) {
-            String[] types = typeBindDef.split(",");
+            String[] types = typeBindDef.split(typeBindSeparator);
             for (String type : types) {
                 typeBind.add(type.trim());
             }
@@ -381,7 +382,7 @@ public class DCInput {
 
     /**
      * Get the style for this form field
-     * 
+     *
      * @return the style
      */
     public String getStyle() {
