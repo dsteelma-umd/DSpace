@@ -2,10 +2,11 @@ package edu.umd.lib.dspace.content.service;
 
 import java.sql.SQLException;
 import java.util.List;
-
-import org.dspace.core.Context;
+import java.util.UUID;
 
 import edu.umd.lib.dspace.content.EmbargoDTO;
+import org.dspace.core.Context;
+
 
 /**
  * Service interface class for the EmbargoDTO object.
@@ -20,4 +21,12 @@ public interface EmbargoDTOService {
      * @return embargoList List of EmbargoDTO object
      */
     public List<EmbargoDTO> getEmbargoList(Context context) throws SQLException;
+
+    /**
+     * Returns the embargo for the given bitstream UUID.
+     *
+     * @param bitstreamUuid the bitstream UUID to return the embargo of
+     * @return an EmbargoDTO object describing the embargo for the given UUID
+     */
+    public EmbargoDTO getEmbargo(Context context, UUID bitstreamUuid) throws SQLException;
 }

@@ -2,19 +2,18 @@ package edu.umd.lib.dspace.content;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
+import edu.umd.lib.dspace.content.dao.EmbargoDTODAO;
+import edu.umd.lib.dspace.content.service.EmbargoDTOService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.dspace.content.MetadataField;
 import org.dspace.content.MetadataSchemaEnum;
 import org.dspace.content.service.MetadataFieldService;
 import org.dspace.content.service.MetadataSchemaService;
 import org.dspace.core.Context;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.umd.lib.dspace.content.dao.EmbargoDTODAO;
-import edu.umd.lib.dspace.content.service.EmbargoDTOService;
 
 public class EmbargoDTOServiceImpl implements EmbargoDTOService {
 
@@ -42,8 +41,7 @@ public class EmbargoDTOServiceImpl implements EmbargoDTOService {
         super();
     }
 
-    @Override
-    public List<EmbargoDTO> getEmbargoList(Context context) throws SQLException {
+    private synchronized void initFields(Context context) throws SQLException {
         if (!fieldsInitialized) {
             titleId = getDCFieldID(context, "title", null);
             advisorId = getDCFieldID(context, "contributor", "advisor");
@@ -57,11 +55,24 @@ public class EmbargoDTOServiceImpl implements EmbargoDTOService {
         } else {
             log.debug("Metadata field IDs initialized already!");
         }
+    }
+
+    @Override
+    public List<EmbargoDTO> getEmbargoList(Context context) throws SQLException {
+        initFields(context);
         return embargoDTODAO.getEmbargoDTOList(context, titleId, advisorId, authorId, departmentId, typeId, groupName);
     }
 
+    @Override
+    public EmbargoDTO getEmbargo(Context context, UUID bitstreamUuid) throws SQLException {
+        initFields(context);
+        return embargoDTODAO.getEmbargoDTO(
+            context, bitstreamUuid, titleId, advisorId, authorId, departmentId, typeId, groupName);
+    }
+
     private int getDCFieldID(Context context, String element, String qualifier) throws SQLException {
-        MetadataField field = metadataFieldService.findByElement(context, MetadataSchemaEnum.DC.getName(), element, qualifier);
+        MetadataField field = metadataFieldService.findByElement(
+            context, MetadataSchemaEnum.DC.getName(), element, qualifier);
         if (field == null) {
             return -1;
         }

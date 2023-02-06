@@ -2,10 +2,10 @@ package edu.umd.lib.dspace.content.dao;
 
 import java.sql.SQLException;
 import java.util.List;
-
-import org.dspace.core.Context;
+import java.util.UUID;
 
 import edu.umd.lib.dspace.content.EmbargoDTO;
+import org.dspace.core.Context;
 
 /**
  * Interface for the data access object of embargoed items for data transfer.
@@ -26,5 +26,22 @@ public interface EmbargoDTODAO {
      */
     List<EmbargoDTO> getEmbargoDTOList(
         Context context, int titleId, int advisorId, int authorId, int departmentId,
+            int typeId, String groupName) throws SQLException;
+
+    /**
+     * Returns the embargo for the given UUID.
+     *
+     * @param context the application context
+     * @param uuid the bitstream UUID to return the embargo of
+     * @param titleId the MetadataField id for the title field
+     * @param advisorId the MetadataField id for the advisor field
+     * @param authorId the MetadataField id for the author field
+     * @param departmentId the MetadataField id for the department field
+     * @param typeId the MetadataField id for the type field
+     * @param groupName the group name of embargoed items
+     * @return an EmbargoDTO object describing the embargo for the given UUID
+     */
+    EmbargoDTO getEmbargoDTO(
+        Context context, UUID bitstreamUuid, int titleId, int advisorId, int authorId, int departmentId,
             int typeId, String groupName) throws SQLException;
 }
