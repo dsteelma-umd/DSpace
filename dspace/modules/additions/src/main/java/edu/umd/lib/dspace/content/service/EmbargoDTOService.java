@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import edu.umd.lib.dspace.content.EmbargoDTO;
+import org.dspace.content.DSpaceObject;
 import org.dspace.core.Context;
 
 
@@ -29,4 +30,12 @@ public interface EmbargoDTOService {
      * @return an EmbargoDTO object describing the embargo for the given UUID
      */
     public EmbargoDTO getEmbargo(Context context, UUID bitstreamUuid) throws SQLException;
+
+    /**
+     * Returns true if the given DSpaceObject is embargoed, false otherwise.
+     *
+     * @param object the DSpaceObject to test
+     * @return true if the given DSpaceObject is embargoed, false otherwise.
+     */
+    boolean isEmbargoed(DSpaceObject object);
 }

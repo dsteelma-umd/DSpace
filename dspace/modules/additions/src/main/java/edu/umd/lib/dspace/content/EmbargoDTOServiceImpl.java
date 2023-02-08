@@ -8,11 +8,15 @@ import edu.umd.lib.dspace.content.dao.EmbargoDTODAO;
 import edu.umd.lib.dspace.content.service.EmbargoDTOService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dspace.authorize.ResourcePolicy;
+import org.dspace.authorize.service.ResourcePolicyService;
+import org.dspace.content.DSpaceObject;
 import org.dspace.content.MetadataField;
 import org.dspace.content.MetadataSchemaEnum;
 import org.dspace.content.service.MetadataFieldService;
 import org.dspace.content.service.MetadataSchemaService;
 import org.dspace.core.Context;
+import org.dspace.eperson.Group;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class EmbargoDTOServiceImpl implements EmbargoDTOService {
@@ -27,6 +31,9 @@ public class EmbargoDTOServiceImpl implements EmbargoDTOService {
 
     @Autowired(required = true)
     protected MetadataSchemaService metadataSchemaService;
+
+    @Autowired(required = true)
+    protected ResourcePolicyService resourcePolicyService;
 
     private static boolean fieldsInitialized = false;
 
@@ -77,5 +84,19 @@ public class EmbargoDTOServiceImpl implements EmbargoDTOService {
             return -1;
         }
         return field.getID();
+    }
+
+    @Override
+    public boolean isEmbargoed(DSpaceObject object) {
+        List<ResourcePolicy> resourcePolicies = object.getResourcePolicies();
+        for (ResourcePolicy policy : resourcePolicies) {
+            Group group = policy.getGroup();
+            if (group != null) {
+                if (group.getName().equals("ETD Embargo")) {
+                    return resourcePolicyService.isDateValid(policy);
+                }
+            }
+        }
+        return false;
     }
 }
