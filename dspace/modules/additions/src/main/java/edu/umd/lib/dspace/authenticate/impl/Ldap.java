@@ -36,6 +36,10 @@ public class Ldap {
         this.entry = entry;
     }
 
+    public String getUid() {
+        return strUid;
+    }
+
     /**
      * Return a (possible empty) List of Strings representing the values for the
      * attribute

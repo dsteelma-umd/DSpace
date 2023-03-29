@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +18,8 @@ import edu.umd.lib.dspace.authenticate.impl.Ldap;
 import edu.umd.lib.dspace.authenticate.impl.LdapServiceImpl;
 import edu.yale.its.tp.cas.client.ProxyTicketValidator;
 import edu.yale.its.tp.cas.client.ServiceTicketValidator;
+
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,6 +54,8 @@ public class CASAuthentication implements AuthenticationMethod {
 
     public final static String CAS_AUTHENTICATED = "cas.authenticated";
     public final static String CAS_LDAP = "cas.ldap";
+
+    private static PassiveExpiringMap<String, Ldap> ldapCache = new PassiveExpiringMap<>(5000);
 
     private final static ConfigurationService configurationService =
         DSpaceServicesFactory.getInstance().getConfigurationService();
@@ -96,6 +102,12 @@ public class CASAuthentication implements AuthenticationMethod {
         try {
             Ldap ldap = (Ldap) request.getSession().getAttribute(CAS_LDAP);
             if (ldap != null) {
+                String ldapUid = ldap.getUid();
+                EPerson currentUser = context.getCurrentUser();
+                if ((currentUser != null) && (!currentUser.getNetid().equals(ldapUid))) {
+                    // Reset LDAP
+                    setLdapSessionAttribute(context, request, currentUser.getNetid());
+                }
                 List<Group> groups = ldap.getGroups(context);
 
                 Group CASGroup = groupService.findByName(context, "CAS Authenticated");
@@ -107,12 +119,53 @@ public class CASAuthentication implements AuthenticationMethod {
                 groups.add(CASGroup);
 
                 return groups;
+            } else {
+                if (request.getHeader("X-On-Behalf-Of") != null) {
+                    // We are impersonating someone, so see if they should has "CAS Authenticated" special group
+                    String epersonId = request.getHeader("X-On-Behalf-Of");
+                    setLdapSessionAttribute(context, request, epersonId);
+                }
             }
         } catch (Exception e) {
             log.error("Ldap exception", e);
         }
 
         return new ArrayList<Group>();
+    }
+
+    protected void setLdapSessionAttribute(Context context, HttpServletRequest request, String epersonId)
+            throws SQLException {
+        EPerson eperson = ePersonService.findByIdOrLegacyId(context, epersonId);
+        if (eperson != null) {
+            String netId = eperson.getNetid();
+            Ldap ldap = getLdapForNetId(context, netId);
+            if (ldap == null) {
+                log.debug("Unknown directory id " + netId);
+            } else {
+                // Save the ldap object in the session
+                request.getSession().setAttribute(CAS_LDAP, ldap);
+            }
+        }
+    }
+
+    protected synchronized Ldap getLdapForNetId(Context context, String netId) {
+        Ldap ldap = ldapCache.get(netId);
+        if (ldap != null) {
+            return ldap;
+        }
+
+        // Check directory
+        try (LdapService ldapService = new LdapServiceImpl(context)) {
+            ldap = ldapService.queryLdap(netId);
+            if (ldap == null) {
+                log.debug("Unknown directory id " + netId);
+            }
+            ldapCache.put(netId, ldap);
+        } catch (NamingException ne) {
+            log.error("Unexpected exception caught", ne);
+        }
+
+        return ldap;
     }
 
     /**
