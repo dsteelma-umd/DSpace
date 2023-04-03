@@ -72,15 +72,21 @@ public class CASAuthenticationTest extends AbstractUnitTest {
     @Test
     public void authenticate_fails_LdapUserNotFound() throws Exception {
         HttpServletRequest mockRequest = new MockHttpServletRequest("", Map.of("ticket", "ST-CAS-TICKET"));
+        LdapService mockLdapService = MockLdapService.userNotFound();
 
         CASAuthentication stubCas = new CASAuthentication() {
             @Override
             protected String getNetIdFromCasTicket(Context context, String ticket, String serviceUrl) {
                 return "no_such_user";
             }
+
+            @Override
+            protected LdapService createLdapService(Context context) {
+                return mockLdapService;
+            }
         };
 
-        LdapService mockLdapService = MockLdapService.userNotFound();
+
 
         int response = stubCas.authenticate(context, null, null, null, mockRequest);
 
@@ -316,7 +322,7 @@ public class CASAuthenticationTest extends AbstractUnitTest {
     @Test
     public void getSpecialGroups_impersonatingUser_impersonatedUserNotInLdap() throws Exception {
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-        mockRequest.addHeader("X-On-Behalf-Of", "userNotInLdap");
+        context.switchContextUser(eperson);
 
         LdapService mockLdapService = MockLdapService.userNotFound();
 
@@ -334,7 +340,8 @@ public class CASAuthenticationTest extends AbstractUnitTest {
     @Test
     public void getSpecialGroups_impersonatingUser_impersonatedUserInLdap() throws Exception {
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-        mockRequest.addHeader("X-On-Behalf-Of", "userInLdap");
+        eperson.setNetid("impersonatedUser");
+        context.switchContextUser(eperson);
 
         LdapService mockLdapService = MockLdapService.userFound();
 
@@ -369,7 +376,6 @@ public class CASAuthenticationTest extends AbstractUnitTest {
         }
     }
 }
-
 
 
 class MockHttpServletRequest extends DummyHttpServletRequest {

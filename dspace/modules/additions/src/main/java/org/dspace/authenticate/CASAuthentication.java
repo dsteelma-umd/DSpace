@@ -101,24 +101,25 @@ public class CASAuthentication implements AuthenticationMethod {
      *
      * or
      *
-     * b) The request contains an "X-On-Behalf-Of" header, indicating that a
-     *    user is being impersonated. Note that this method will be called
-     *    for each request.
+     * b) the "isContextSwitched()" method on the DSpace Contet object returns
+     *    true, indicated that a user is being impersonated. Note that this
+     *    method will be called for each request.
      *
      * @param context the DSpace context object
      * @param request the HttpServletRequest being processed
-     * @returns an Ldap object derived from the request, or null.
+     * @return an Ldap object derived from the request, or null.
      */
     protected Ldap getLdap(Context context, HttpServletRequest request) {
         if (request.getSession().getAttribute(CAS_LDAP) != null) {
             return (Ldap) request.getSession().getAttribute(CAS_LDAP);
         }
 
-        if (request.getHeader("X-On-Behalf-Of") != null) {
-            String impersonatedNetId = request.getHeader("X-On-Behalf-Of");
+        if (context.isContextUserSwitched() && (context.getCurrentUser() != null)) {
+            String impersonatedNetId = context.getCurrentUser().getNetid();
+
 
             if (impersonatedNetId != null) {
-                return queryLdapService(context, impersonatedNetId);
+                return queryLdap(context, impersonatedNetId);
             }
         }
 
@@ -216,7 +217,7 @@ public class CASAuthentication implements AuthenticationMethod {
      * @return an Ldap object encapsulating the LDAP search results, or null
      * if the user id is not found.
      */
-    protected Ldap queryLdapService(Context context, String strUid) {
+    protected Ldap queryLdap(Context context, String strUid) {
         try {
             LdapService ldapService = createLdapService(context);
 
@@ -259,7 +260,7 @@ public class CASAuthentication implements AuthenticationMethod {
             }
 
             // Check directory
-            Ldap ldap = queryLdapService(context, netid);
+            Ldap ldap = queryLdap(context, netid);
             if (ldap == null) {
                 log.error("Unknown directory id " + netid);
                 return NO_SUCH_USER;
