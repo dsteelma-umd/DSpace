@@ -117,7 +117,6 @@ public class CASAuthentication implements AuthenticationMethod {
         if (context.isContextUserSwitched() && (context.getCurrentUser() != null)) {
             String impersonatedNetId = context.getCurrentUser().getNetid();
 
-
             if (impersonatedNetId != null) {
                 return queryLdap(context, impersonatedNetId);
             }
