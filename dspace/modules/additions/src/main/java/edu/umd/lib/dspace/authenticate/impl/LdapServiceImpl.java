@@ -15,6 +15,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import edu.umd.lib.dspace.authenticate.LdapService;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dspace.core.LogHelper;
@@ -23,14 +24,23 @@ import org.dspace.services.factory.DSpaceServicesFactory;
 
 /**
  * Implementation of the LdapService interface.
+ *
+ * This implementation uses a simple in-memory cache to limit the number of
+ * actual calls made to the LDAP server.
+ *
+ * Caching is needed because when impersonating users, the "queryLdap" method
+ * will be called by CASAuthentication for each HTTP request.
+ *
+ * Ldap entries in the cache expire based on the
+ * <code>drum.ldap.cacheTimeout</code> configuration parameter, which is
+ * the timemout in milliseconds, or 0 for no caching. The default timeout is
+ * 5 minutes.
  */
 public class LdapServiceImpl implements LdapService {
 
     /** log4j category */
     private static Logger log = LogManager.getLogger(LdapServiceImpl.class);
 
-    private org.dspace.core.Context context = null;
-    private DirContext ctx = null;
     private String strUid = null;
     private SearchResult entry = null;
 
@@ -43,12 +53,35 @@ public class LdapServiceImpl implements LdapService {
         DSpaceServicesFactory.getInstance().getConfigurationService();
 
     /**
+     * The expiring, in-memory cache. Made protected for use in tests.
+     */
+    protected static volatile PassiveExpiringMap<String, Ldap> ldapQueryCache;
+
+    /**
+     * The delegate for calls to the LDAP server. Made protected for use in
+     * tests
+     */
+    protected LdapServerDelegate delegate;
+
+    /**
      * Configures the LDAP connection, based on configuration and environment
      * variables.
      */
     public LdapServiceImpl(org.dspace.core.Context context) throws NamingException {
-        this.context = context;
+        this.delegate = makeLdapServerDelegate(context);
+        initCache();
+    }
 
+    /**
+     * Returns the LdapServerDelegate for use in querying the LDAP server
+     *
+     * This class it provided to enable tests to override calls to the LDAP
+     * server.
+     *
+     * @return the LdapServerDelegate for use in querying the LDAP server
+     */
+    protected LdapServerDelegate makeLdapServerDelegate(org.dspace.core.Context context)
+            throws NamingException {
         String strUrl = configurationService.getProperty("drum.ldap.url");
         String strBindAuth = configurationService.getProperty("drum.ldap.bind.auth");
         String strBindPassword =  configurationService.getProperty("drum.ldap.bind.password");
@@ -70,7 +103,20 @@ public class LdapServiceImpl implements LdapService {
 
         // Create the directory context
         log.debug("Initailizing new LDAP context");
-        ctx = new InitialDirContext(env);
+        InitialDirContext ctx = new InitialDirContext(env);
+
+        return new LdapServerDelegate(context, ctx);
+    }
+
+    /**
+     * Initializes the in-memory persistent cache for LDAP retrievals.
+     */
+    private static synchronized void initCache() {
+        if (ldapQueryCache == null) {
+            int cacheTimeoutInMillis =
+                configurationService.getIntProperty("drum.ldap.cacheTimeout", 5 * 60 * 1000); // Default is five minutes
+            ldapQueryCache = new PassiveExpiringMap<>(cacheTimeoutInMillis);
+        }
     }
 
     /**
@@ -82,57 +128,18 @@ public class LdapServiceImpl implements LdapService {
     @Override
     public Ldap queryLdap(String strUid) {
         try {
-            if (ctx == null) {
-                return null;
+            Ldap ldap = null;
+            synchronized (ldapQueryCache) {
+                if (ldapQueryCache.containsKey(strUid)) {
+                    log.debug("Returning cached LDAP entry for {}", strUid);
+                    return ldapQueryCache.get(strUid);
+                }
+
+                ldap = delegate.queryLdapService(strUid);
+
+                ldapQueryCache.put(strUid, ldap);
             }
 
-            this.strUid = strUid;
-            String strFilter = "uid=" + strUid;
-
-            // Setup the search controls
-            SearchControls sc =  new SearchControls();
-            sc.setReturningAttributes(strRequestAttributes);
-            sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-            // Search
-            NamingEnumeration<SearchResult> entries = ctx.search("", strFilter, sc);
-
-            // Make sure we got something
-            if (entries == null) {
-                log.warn(LogHelper.getHeader(context,
-                                              "null returned on ctx.search for " + strFilter,
-                                              ""));
-                return null;
-            }
-
-            // Check for a match
-            if (!entries.hasMore()) {
-                log.debug(LogHelper.getHeader(context,
-                                              "no matching entries for " + strFilter,
-                                              ""));
-                return null;
-            }
-
-
-            // Get entry
-            entry = (SearchResult)entries.next();
-            log.debug(LogHelper.getHeader(context,
-                                          "matching entry for " + strUid + ": " + entry.getName(),
-                                          ""));
-            Ldap ldap = new Ldap(strUid, entry);
-
-            // Check for another match
-            if (entries.hasMore()) {
-                entry = null;
-                log.warn(LogHelper.getHeader(context,
-                                              "multiple matching entries for " + strFilter,
-                                              ""));
-                return null;
-            }
-
-            log.debug(LogHelper.getHeader(context,
-                                          "ldap entry:\n" + entry,
-                                          ""));
             return ldap;
         } catch (NamingException ne) {
             log.error("LDAP NamingException for '" + strUid + "'", ne);
@@ -145,13 +152,8 @@ public class LdapServiceImpl implements LdapService {
      */
     @Override
     public void close() {
-        if (ctx != null) {
-            try {
-                ctx.close();
-                ctx = null;
-            } catch (NamingException e) {
-                // Do nothing
-            }
+        if (delegate != null) {
+            delegate.close();
         }
     }
 
@@ -161,6 +163,83 @@ public class LdapServiceImpl implements LdapService {
             return "null";
         }
         return strUid + " (" + entry.getName() + ")";
+    }
+
+    public static class LdapServerDelegate {
+        private SearchResult entry;
+        private org.dspace.core.Context context;
+        private DirContext ctx;
+
+        public LdapServerDelegate(org.dspace.core.Context context, DirContext ctx) {
+            this.context = context;
+            this.ctx = ctx;
+        }
+
+        public Ldap queryLdapService(String strUid) throws NamingException {
+            if (ctx == null) {
+                return null;
+            }
+
+            String strFilter = "uid=" + strUid;
+
+            // Setup the search controls
+            SearchControls sc =  new SearchControls();
+            sc.setReturningAttributes(strRequestAttributes);
+            sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+            // Search
+            log.debug("Searching LDAP server for {}", strUid);
+            NamingEnumeration<SearchResult> entries = ctx.search("", strFilter, sc);
+
+            // Make sure we got something
+            if (entries == null) {
+                log.warn(LogHelper.getHeader(context,
+                                                "null returned on ctx.search for " + strFilter,
+                                                ""));
+                return null;
+            }
+
+            // Check for a match
+            if (!entries.hasMore()) {
+                log.debug(LogHelper.getHeader(context,
+                                                "no matching entries for " + strFilter,
+                                                ""));
+                return null;
+            }
+
+
+            // Get entry
+            entry = (SearchResult)entries.next();
+            log.debug(LogHelper.getHeader(context,
+                                            "matching entry for " + strUid + ": " + entry.getName(),
+                                            ""));
+            Ldap ldap = new Ldap(strUid, entry);
+
+            // Check for another match
+            if (entries.hasMore()) {
+                entry = null;
+                log.warn(LogHelper.getHeader(context,
+                                                "multiple matching entries for " + strFilter,
+                                                ""));
+                return null;
+            }
+
+            log.debug(LogHelper.getHeader(context,
+                                            "ldap entry:\n" + entry,
+                                            ""));
+            return ldap;
+        }
+
+        public void close() {
+            if (ctx != null) {
+                try {
+                    ctx.close();
+                    ctx = null;
+                } catch (NamingException e) {
+                    // Do nothing
+                }
+            }
+        }
     }
 }
 
