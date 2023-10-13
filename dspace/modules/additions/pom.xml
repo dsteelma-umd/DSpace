@@ -273,6 +273,10 @@
       </dependency>
       <!-- UMD Customization -->
       <dependency>
+          <groupId>org.dspace</groupId>
+          <artifactId>dspace-oai</artifactId>
+      </dependency>
+      <dependency>
          <groupId>dom4j</groupId>
          <artifactId>dom4j</artifactId>
          <version>1.6.1</version>

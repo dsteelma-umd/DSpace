@@ -36,8 +36,9 @@ services:
       # UMD Customization
       dspace__P__server__P__url: https://api.drum-local.lib.umd.edu/server
       dspace__P__ui__P__url: https://drum-local.lib.umd.edu:4000
+      dspace__P__name: 'DRUM'
+      dspace__P__long__P__name: 'Digital Repository at the University of Maryland (DRUM)'
       # End UMD Customization
-      dspace__P__name: 'DSpace Started with Docker Compose'
       # db.url: Ensure we are using the 'dspacedb' image for our database
       # UMD Customization
       db__P__url: 'jdbc:postgresql://dspacedb:5432/drum'

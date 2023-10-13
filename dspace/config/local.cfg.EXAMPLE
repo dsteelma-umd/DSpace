@@ -55,9 +55,12 @@ dspace.server.url = ${dspace.baseUrl}/server
 # It corresponds to the URL that you would type into your browser to access the User Interface.
 dspace.ui.url = http://localhost:4000
 
-# Name of the site
 # UMD Customization
-dspace.name = Digital Repository at the University of Maryland (DRUM)
+# Name of the site
+dspace.name = DRUM
+
+# Expanded name of site
+dspace.long.name = Digital Repository at the University of Maryland (DRUM)
 # End UMD Customization
 
 # Assetstore configurations have moved to config/modules/assetstore.cfg
