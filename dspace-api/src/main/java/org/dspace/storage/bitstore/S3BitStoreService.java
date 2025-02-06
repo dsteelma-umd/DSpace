@@ -27,6 +27,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -143,9 +144,14 @@ public class S3BitStoreService extends BaseBitStoreService {
             @NotNull Regions regions,
             @NotNull AWSCredentials awsCredentials
     ) {
+        String customEndpoint = "http://host.docker.internal:9000"; // Example for LocalStack
+        String region = "us-east-1"; // Specify the AWS region
+
         return () -> AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-                .withRegion(regions)
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(customEndpoint, region))
+                .withPathStyleAccessEnabled(true)
+                //.withRegion(regions)
                 .build();
     }
 
