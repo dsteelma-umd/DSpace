@@ -60,9 +60,22 @@ ENV DSPACE_INSTALL=/dspace
 # Copy the /dspace directory from 'ant_build' container to /dspace in this container
 COPY --from=ant_build /dspace $DSPACE_INSTALL
 WORKDIR $DSPACE_INSTALL
+ENV TZ=America/New_York
+
 # Need host command for "[dspace]/bin/make-handle-config"
 RUN apt-get update \
     && apt-get install -y --no-install-recommends host \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+           cron \
+           csh \
+           postfix \
+           s-nail \
+           libgetopt-complete-perl \
+           libconfig-properties-perl \
+           vim \
+           python3-lxml && \
+           mkfifo /var/spool/postfix/public/pickup && \
+           ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && apt-get purge -y --auto-remove \
     && rm -rf /var/lib/apt/lists/*
 # Expose Tomcat port (8080) & Handle Server HTTP port (8000)
