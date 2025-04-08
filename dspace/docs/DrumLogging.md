@@ -67,6 +67,13 @@ Kubernetes), do the following:
 
 ### DRUM - DSpace Logs
 
+In Kubernetes, the DSpace application logs are controlled by the following
+files
+
+* overlays/\<NAMESPACE>/log4j2.xml - TODO
+* overlays/\<NAMESPACE>/log4j2-cli.xml - TODO
+* overlays/\<NAMESPACE>/log4j2-handle-plugin.xml - TODO
+
 In Kubernetes, the DSpace application logs are controlled by the
 "overlays/\<NAMESPACE>/log4j2.xml" file (where "\<NAMESPACE>" is the Kubernetes
 namespace (i.e., "sandbox", "test", "qa", or "prod")).

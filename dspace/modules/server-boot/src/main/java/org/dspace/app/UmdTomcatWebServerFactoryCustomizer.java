@@ -46,7 +46,7 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         // Control enabling of the JsonAccessLogValve based on UMD custom
         // "umd.server.tomcat.accesslog.json.enabled" property, instead of
         // the Spring Boot standard "server.tomcat.accesslog.enabled" to prevent
-        // double-logging from the stock Spring Book AccessLogValve
+        // double-logging from the stock Spring Boot AccessLogValve
         boolean jsonLoggerEnabled = Boolean
                 .parseBoolean(configurationService.getProperty("umd.server.tomcat.accesslog.json.enabled", "false"));
 
@@ -60,9 +60,27 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         PropertyMapper map = PropertyMapper.get();
         Accesslog accessLogConfig = tomcatProperties.getAccesslog();
 
+        // UMD Customization
+        // Append "logfile" JSON attribute to identify the log
+        String logPattern = (new StringBuilder())
+            .append("{")
+            .append("\"host\":\"%h\",")
+            .append("\"logicalUserName\":\"%l\",")
+            .append("\"user\":\"%u\",")
+            .append("\"time\":\"%t\",")
+            .append("\"request\":\"\"%r\"\",")
+            .append("\"statusCode\":\"%s\",")
+            .append("\"size\":\"%b\",")
+            .append("\"elapsedTime\":\"%D\",")
+            .append("\"logfile\":\"access.log\",")
+            .toString();
+        // End UMD Customization
+
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
         map.from(accessLogConfig.getConditionUnless()).to(valve::setConditionUnless);
-        map.from(accessLogConfig.getPattern()).to(valve::setPattern);
+        // UMD Customization
+        map.from(logPattern).to(valve::setPattern);
+        // End UMD Customization
         map.from(accessLogConfig.getDirectory()).to(valve::setDirectory);
         map.from(accessLogConfig.getPrefix()).to(valve::setPrefix);
         map.from(accessLogConfig.getSuffix()).to(valve::setSuffix);
@@ -78,6 +96,7 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         map.from(accessLogConfig.isBuffered()).to(valve::setBuffered);
         map.from(jsonLoggerEnabled).to(valve::setEnabled);
 
+        System.out.println("****** UmdTomcatWebServerFactoryCustomizer::jsonLoggerEnabled=" + jsonLoggerEnabled);
         factory.addEngineValves(valve);
     }
 }
