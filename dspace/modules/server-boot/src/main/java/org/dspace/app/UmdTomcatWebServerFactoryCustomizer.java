@@ -81,7 +81,7 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         System.out.println("*****UmdTomcatWebServerFactoryCustomizer::logPattern=" + logPattern);
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
         map.from(accessLogConfig.getConditionUnless()).to(valve::setConditionUnless);
-        map.from(accessLogConfig.getPattern()).to(valve::setPattern);
+        map.from(logPattern).to(valve::setPattern);
         map.from(accessLogConfig.getDirectory()).to(valve::setDirectory);
         map.from(accessLogConfig.getPrefix()).to(valve::setPrefix);
         map.from(accessLogConfig.getSuffix()).to(valve::setSuffix);
