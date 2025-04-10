@@ -60,6 +60,24 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         PropertyMapper map = PropertyMapper.get();
         Accesslog accessLogConfig = tomcatProperties.getAccesslog();
 
+        // UMD Customization
+        // Append "logfile" JSON attribute to identify the log
+        String logPattern = (new StringBuilder())
+            .append("{")
+            .append("\"host\":\"%h\",")
+            .append("\"logicalUserName\":\"%l\",")
+            .append("\"user\":\"%u\",")
+            .append("\"time\":\"%t\",")
+            .append("\"request\":\"\"%r\"\",")
+            .append("\"statusCode\":\"%s\",")
+            .append("\"size\":\"%b\",")
+            .append("\"elapsedTime\":\"%D\",")
+            .append("\"logfile\":\"access.log\",")
+            .toString();
+        // End UMD Customization
+
+        System.out.println("*****UmdTomcatWebServerFactoryCustomizer::accesLogConfig.getPattern()=" + accessLogConfig.getPattern());
+        System.out.println("*****UmdTomcatWebServerFactoryCustomizer::logPattern=" + logPattern);
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
         map.from(accessLogConfig.getConditionUnless()).to(valve::setConditionUnless);
         map.from(accessLogConfig.getPattern()).to(valve::setPattern);
