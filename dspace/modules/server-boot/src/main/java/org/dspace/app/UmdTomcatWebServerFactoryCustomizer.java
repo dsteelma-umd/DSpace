@@ -1,5 +1,9 @@
 package org.dspace.app;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.catalina.valves.JsonAccessLogValve;
 import org.dspace.services.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +60,7 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         // Copied from spring-boot-project/spring-boot-autoconfigure/
         //   src/main/java/org/springframework/boot/autoconfigure/web/embedded/TomcatWebServerFactoryCustomizer.java
         ServerProperties.Tomcat tomcatProperties = this.serverProperties.getTomcat();
-        JsonAccessLogValve valve = new JsonAccessLogValve();
+        JsonAccessLogValve valve = new UmdExtendedJsonAccessLogValue();
         PropertyMapper map = PropertyMapper.get();
         Accesslog accessLogConfig = tomcatProperties.getAccesslog();
 
@@ -77,7 +81,7 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         //     .toString();
         // End UMD Customization
 
-        String logPattern = "%h \"%r\"";
+        String logPattern = "%h \"%r\" logFile: foobar";
         System.out.println("*****UmdTomcatWebServerFactoryCustomizer::accesLogConfig.getPattern()=" + accessLogConfig.getPattern());
         System.out.println("*****UmdTomcatWebServerFactoryCustomizer::logPattern=" + logPattern);
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
@@ -97,7 +101,19 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         map.from(accessLogConfig.isRequestAttributesEnabled()).to(valve::setRequestAttributesEnabled);
         map.from(accessLogConfig.isBuffered()).to(valve::setBuffered);
         map.from(jsonLoggerEnabled).to(valve::setEnabled);
+        System.out.println("*****UmdTomcatWebServerFactoryCustomizer::accessLogConfig.getPattern()='" + accessLogConfig.getPattern() + "'");
 
         factory.addEngineValves(valve);
+    }
+}
+
+class UmdExtendedJsonAccessLogValue extends JsonAccessLogValve {
+    @Override
+    protected AccessLogElement[] createLogElements() {
+        System.out.println("*****ExtendedJsonAccessLogValue");
+        List<AccessLogElement> logElements = new ArrayList<>(Arrays.asList(super.createLogElements()));
+        AccessLogElement literalStringElement = new StringElement("logFile: access.log");
+        logElements.add(literalStringElement);
+        return logElements.toArray(new AccessLogElement[0]);
     }
 }
