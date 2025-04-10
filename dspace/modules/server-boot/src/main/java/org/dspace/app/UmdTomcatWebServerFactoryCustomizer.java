@@ -72,7 +72,8 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
             .append("\"statusCode\":\"%s\",")
             .append("\"size\":\"%b\",")
             .append("\"elapsedTime\":\"%D\",")
-            .append("\"logfile\":\"access.log\",")
+            .append("\"logfile\":\"access.log\"")
+            .append("}")
             .toString();
         // End UMD Customization
 
