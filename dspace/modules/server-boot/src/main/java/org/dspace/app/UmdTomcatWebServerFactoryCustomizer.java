@@ -62,21 +62,22 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
 
         // UMD Customization
         // Append "logfile" JSON attribute to identify the log
-        String logPattern = (new StringBuilder())
-            .append("{")
-            .append("&quot;host&quot;:&quot;%h&quot;,")
-            .append("&quot;logicalUserName&quot;:&quot;%l&quot;,")
-            .append("&quot;user&quot;:&quot;%u&quot;,")
-            .append("&quot;time&quot;:&quot;%t&quot;,")
-            .append("&quot;request&quot;:&quot;&quot;%r&quot;&quot;,")
-            .append("&quot;statusCode&quot;:&quot;%s&quot;,")
-            .append("&quot;size&quot;:&quot;%b&quot;,")
-            .append("&quot;elapsedTime&quot;:&quot;%D&quot;,")
-            .append("&quot;logfile&quot;:&quot;access.log&quot;")
-            .append("}")
-            .toString();
+        // String logPattern = (new StringBuilder())
+        //     .append("{")
+        //     .append("&quot;host&quot;:&quot;%h&quot;,")
+        //     .append("&quot;logicalUserName&quot;:&quot;%l&quot;,")
+        //     .append("&quot;user&quot;:&quot;%u&quot;,")
+        //     .append("&quot;time&quot;:&quot;%t&quot;,")
+        //     .append("&quot;request&quot;:&quot;&quot;%r&quot;&quot;,")
+        //     .append("&quot;statusCode&quot;:&quot;%s&quot;,")
+        //     .append("&quot;size&quot;:&quot;%b&quot;,")
+        //     .append("&quot;elapsedTime&quot;:&quot;%D&quot;,")
+        //     .append("&quot;logfile&quot;:&quot;access.log&quot;")
+        //     .append("}")
+        //     .toString();
         // End UMD Customization
 
+        String logPattern = "%h \"%r\"";
         System.out.println("*****UmdTomcatWebServerFactoryCustomizer::accesLogConfig.getPattern()=" + accessLogConfig.getPattern());
         System.out.println("*****UmdTomcatWebServerFactoryCustomizer::logPattern=" + logPattern);
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
