@@ -112,8 +112,8 @@ class UmdExtendedJsonAccessLogValue extends JsonAccessLogValve {
     protected AccessLogElement[] createLogElements() {
         System.out.println("*****ExtendedJsonAccessLogValue");
         List<AccessLogElement> logElements = new ArrayList<>(Arrays.asList(super.createLogElements()));
-        AccessLogElement literalStringElement = new StringElement("logFile: access.log");
-        logElements.add(literalStringElement);
+        AccessLogElement literalStringElement = new StringElement("\"logFile\": \"access.log\"");
+        logElements.add(logElements.size() - 2, literalStringElement);
         return logElements.toArray(new AccessLogElement[0]);
     }
 }
