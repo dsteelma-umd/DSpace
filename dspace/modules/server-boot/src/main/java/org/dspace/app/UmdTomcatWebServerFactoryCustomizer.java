@@ -60,33 +60,16 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         // Copied from spring-boot-project/spring-boot-autoconfigure/
         //   src/main/java/org/springframework/boot/autoconfigure/web/embedded/TomcatWebServerFactoryCustomizer.java
         ServerProperties.Tomcat tomcatProperties = this.serverProperties.getTomcat();
-        JsonAccessLogValve valve = new UmdExtendedJsonAccessLogValue();
         PropertyMapper map = PropertyMapper.get();
         Accesslog accessLogConfig = tomcatProperties.getAccesslog();
 
-        // UMD Customization
-        // Append "logfile" JSON attribute to identify the log
-        // String logPattern = (new StringBuilder())
-        //     .append("{")
-        //     .append("&quot;host&quot;:&quot;%h&quot;,")
-        //     .append("&quot;logicalUserName&quot;:&quot;%l&quot;,")
-        //     .append("&quot;user&quot;:&quot;%u&quot;,")
-        //     .append("&quot;time&quot;:&quot;%t&quot;,")
-        //     .append("&quot;request&quot;:&quot;&quot;%r&quot;&quot;,")
-        //     .append("&quot;statusCode&quot;:&quot;%s&quot;,")
-        //     .append("&quot;size&quot;:&quot;%b&quot;,")
-        //     .append("&quot;elapsedTime&quot;:&quot;%D&quot;,")
-        //     .append("&quot;logfile&quot;:&quot;access.log&quot;")
-        //     .append("}")
-        //     .toString();
-        // End UMD Customization
 
-        String logPattern = "%h \"%r\" logFile: foobar";
-        System.out.println("*****UmdTomcatWebServerFactoryCustomizer::accesLogConfig.getPattern()=" + accessLogConfig.getPattern());
-        System.out.println("*****UmdTomcatWebServerFactoryCustomizer::logPattern=" + logPattern);
+        // Append "logFile: access.log" as a JSON attribute to the log entries
+        JsonAccessLogValve valve = new UmdExtendedJsonAccessLogValue("logFile", "access.log");
+
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
         map.from(accessLogConfig.getConditionUnless()).to(valve::setConditionUnless);
-        map.from(logPattern).to(valve::setPattern);
+        map.from(accessLogConfig.getPattern()).to(valve::setPattern);
         map.from(accessLogConfig.getDirectory()).to(valve::setDirectory);
         map.from(accessLogConfig.getPrefix()).to(valve::setPrefix);
         map.from(accessLogConfig.getSuffix()).to(valve::setSuffix);
@@ -101,20 +84,37 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         map.from(accessLogConfig.isRequestAttributesEnabled()).to(valve::setRequestAttributesEnabled);
         map.from(accessLogConfig.isBuffered()).to(valve::setBuffered);
         map.from(jsonLoggerEnabled).to(valve::setEnabled);
-        System.out.println("*****UmdTomcatWebServerFactoryCustomizer::accessLogConfig.getPattern()='" + accessLogConfig.getPattern() + "'");
 
         factory.addEngineValves(valve);
     }
 }
 
 class UmdExtendedJsonAccessLogValue extends JsonAccessLogValve {
+    private final AccessLogElement keyValueElement;
+
+    public UmdExtendedJsonAccessLogValue(String key, String value) {
+        this.keyValueElement =  new StringElement(
+            wrap(key) + ": " + wrap(value)
+        );
+    }
+
     @Override
     protected AccessLogElement[] createLogElements() {
-        System.out.println("*****ExtendedJsonAccessLogValue");
         List<AccessLogElement> logElements = new ArrayList<>(Arrays.asList(super.createLogElements()));
-        logElements.add(logElements.size() - 1, new StringElement(","));
-        AccessLogElement literalStringElement = new StringElement("\"logFile\": \"access.log\"");
-        logElements.add(logElements.size() - 1, literalStringElement);
+
+        List<AccessLogElement> appendedElements = new ArrayList<>();
+
+        if (logElements.size() > 0) {
+            appendedElements.add(new StringElement(","));
+        }
+
+        appendedElements.add(keyValueElement);
+
+        logElements.addAll(logElements.size() - 1, appendedElements);
         return logElements.toArray(new AccessLogElement[0]);
+    }
+
+    protected String wrap(String str) {
+        return "\"" + str + "\"";
     }
 }
