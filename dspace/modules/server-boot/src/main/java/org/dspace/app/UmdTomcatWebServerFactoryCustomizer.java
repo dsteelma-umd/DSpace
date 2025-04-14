@@ -1,9 +1,5 @@
 package org.dspace.app;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.catalina.valves.JsonAccessLogValve;
 import org.dspace.services.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +30,18 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
     }
 
     /**
-     * Adds the JsonAccessLogValve to the Tomcat configuration, enabling logs
-     * to be output in the JSON format.
-     *
+     * Adds the UmdExtendedJsonAccessLogValve to the Tomcat configuration,
+     * enabling logs to be output in the JSON format.
+     * <p>
      * The valve is enabled by a UMD custom
-     * "umd.server.tomcat.accesslog.json.enabled" property
-     *
+     * {@code "umd.server.tomcat.accesslog.json.enabled"} property
+     * <p>
      * A custom  property, instead of the Spring Boot standard
      * "server.tomcat.accesslog.enabled" property is used to prevent
      * double-logging from the stock Spring Book AccessLogValve
+     * <p>
+     * The UmdExtendedJsonAccessLogValve allows a single additional
+     * JSON attribute to be added, typically used to identify the log file.
      *
      * @param factory the TomcatServletWebServerFactory to configure
      */
@@ -65,7 +64,7 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
 
 
         // Append "logFile: access.log" as a JSON attribute to the log entries
-        JsonAccessLogValve valve = new UmdExtendedJsonAccessLogValue("logFile", "access.log");
+        JsonAccessLogValve valve = new UmdExtendedJsonAccessLogValve();
 
         map.from(accessLogConfig.getConditionIf()).to(valve::setConditionIf);
         map.from(accessLogConfig.getConditionUnless()).to(valve::setConditionUnless);
@@ -86,35 +85,5 @@ public class UmdTomcatWebServerFactoryCustomizer implements WebServerFactoryCust
         map.from(jsonLoggerEnabled).to(valve::setEnabled);
 
         factory.addEngineValves(valve);
-    }
-}
-
-class UmdExtendedJsonAccessLogValue extends JsonAccessLogValve {
-    private final AccessLogElement keyValueElement;
-
-    public UmdExtendedJsonAccessLogValue(String key, String value) {
-        this.keyValueElement =  new StringElement(
-            wrap(key) + ": " + wrap(value)
-        );
-    }
-
-    @Override
-    protected AccessLogElement[] createLogElements() {
-        List<AccessLogElement> logElements = new ArrayList<>(Arrays.asList(super.createLogElements()));
-
-        List<AccessLogElement> appendedElements = new ArrayList<>();
-
-        if (logElements.size() > 0) {
-            appendedElements.add(new StringElement(","));
-        }
-
-        appendedElements.add(keyValueElement);
-
-        logElements.addAll(logElements.size() - 1, appendedElements);
-        return logElements.toArray(new AccessLogElement[0]);
-    }
-
-    protected String wrap(String str) {
-        return "\"" + str + "\"";
     }
 }
