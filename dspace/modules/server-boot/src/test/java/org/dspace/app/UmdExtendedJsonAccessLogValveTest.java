@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.google.common.base.Splitter;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
@@ -243,10 +244,12 @@ public class UmdExtendedJsonAccessLogValveTest {
         // Set up the mock Response to return expected values
         when(mockRequest.getRemoteHost()).thenReturn(remoteIP);
 
-        String[] requestParams = requestLine.split(" ");
-        when(mockRequest.getMethod()).thenReturn(requestParams[0]);
-        when(mockRequest.getRequestURI()).thenReturn(requestParams[1]);
-        when(mockRequest.getProtocol()).thenReturn(requestParams[2]);
+        List<String> requestParams = Splitter.on(' ').splitToList(requestLine);
+        if (requestParams.size() == 3) {
+            when(mockRequest.getMethod()).thenReturn(requestParams.get(0));
+            when(mockRequest.getRequestURI()).thenReturn(requestParams.get(1));
+            when(mockRequest.getProtocol()).thenReturn(requestParams.get(2));
+        }
 
         // Set up the mock Response to return expected values
         when(mockResponse.getStatus()).thenReturn(status);
