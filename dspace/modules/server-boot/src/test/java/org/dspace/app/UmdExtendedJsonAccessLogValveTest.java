@@ -38,7 +38,12 @@ public class UmdExtendedJsonAccessLogValveTest {
 
         // Having having a "}" in the output is what JsonAccessLogValve
         // does where there is an empty format.
-        assertEquals("}\n", logOutput.toString());
+        assertEquals(
+            """
+            }
+            """,
+            logOutput.toString()
+        );
     }
 
     @Test
@@ -130,12 +135,13 @@ public class UmdExtendedJsonAccessLogValveTest {
     public void testCommonFormat() throws Exception {
         valve.setPattern("common");
 
-        simulateRequest(valve, "GET /index.html HTTP/1.1", "192.168.1.1", 200, 5123);
+        String requestLine = "GET /index.html HTTP/1.1";
+        simulateRequest(valve, requestLine, "192.168.1.1", 200, 5123);
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"-","statusCode":"200","size":"5123"}
-            """,
+            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123"}
+            """.formatted(requestLine),
             logOutput.toString()
         );
     }
@@ -145,12 +151,13 @@ public class UmdExtendedJsonAccessLogValveTest {
     public void testCommonLogFileFormat() throws Exception {
         valve.setPattern("common #logFile:access.log#");
 
-        simulateRequest(valve, "GET /index.html HTTP/1.1", "192.168.1.1", 200, 5123);
+        String requestLine = "GET /index.html HTTP/1.1";
+        simulateRequest(valve, requestLine, "192.168.1.1", 200, 5123);
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"-","statusCode":"200","size":"5123","logFile": "access.log"}
-            """,
+            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","logFile": "access.log"}
+            """.formatted(requestLine),
             logOutput.toString()
         );
     }
@@ -160,15 +167,16 @@ public class UmdExtendedJsonAccessLogValveTest {
     public void testCombinedFormat() throws Exception {
         valve.setPattern("combined");
 
+        String requestLine = "GET /index.html HTTP/1.1";
         String referer = "https://api.drum-local.lib.umd.edu/server/";
         String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0";
 
-        simulateRequest(valve, "GET /index.html HTTP/1.1", "192.168.1.1", 200, 5123, referer, userAgent);
+        simulateRequest(valve, requestLine, "192.168.1.1", 200, 5123, referer, userAgent);
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"-","statusCode":"200","size":"5123","requestHeaders": {"Referer":"https://api.drum-local.lib.umd.edu/server/","User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0"}}
-            """,
+            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","requestHeaders": {"Referer":"%s","User-Agent":"%s"}}
+            """.formatted(requestLine, referer, userAgent),
             logOutput.toString()
         );
     }
@@ -178,15 +186,16 @@ public class UmdExtendedJsonAccessLogValveTest {
     public void testCombinedLogFileFormat() throws Exception {
         valve.setPattern("combined #logFile:access.log#");
 
+        String requestLine = "GET /index.html HTTP/1.1";
         String referer = "https://api.drum-local.lib.umd.edu/server/";
         String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0";
 
-        simulateRequest(valve, "GET /index.html HTTP/1.1", "192.168.1.1", 200, 5123, referer, userAgent);
+        simulateRequest(valve, requestLine, "192.168.1.1", 200, 5123, referer, userAgent);
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"-","statusCode":"200","size":"5123","requestHeaders": {"Referer":"https://api.drum-local.lib.umd.edu/server/","User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0"},"logFile": "access.log"}
-            """,
+            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","requestHeaders": {"Referer":"%s","User-Agent":"%s"},"logFile": "access.log"}
+            """.formatted(requestLine, referer, userAgent),
             logOutput.toString()
         );
     }
@@ -233,7 +242,14 @@ public class UmdExtendedJsonAccessLogValveTest {
 
         // Set up the mock Response to return expected values
         when(mockRequest.getRemoteHost()).thenReturn(remoteIP);
-        when(mockResponse.getStatus()).thenReturn(200);
+
+        String[] requestParams = requestLine.split(" ");
+        when(mockRequest.getMethod()).thenReturn(requestParams[0]);
+        when(mockRequest.getRequestURI()).thenReturn(requestParams[1]);
+        when(mockRequest.getProtocol()).thenReturn(requestParams[2]);
+
+        // Set up the mock Response to return expected values
+        when(mockResponse.getStatus()).thenReturn(status);
         when(mockResponse.getBytesWritten(false)).thenReturn(Long.valueOf(bytes));
 
         Enumeration<String> enumReferer = Collections.enumeration(List.of(referer));
