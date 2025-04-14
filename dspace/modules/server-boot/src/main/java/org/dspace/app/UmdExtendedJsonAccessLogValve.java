@@ -24,10 +24,10 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * This class has the following limitations:
  * <p>
- * 1) The appended attribute is always placed as the last attribute in the
+ * 1. The appended attribute is always placed as the last attribute in the
  *    log entry, irrespective of its location in the pattern.
  * <p>
- * 2) Only one JSON attribute can be appended.
+ * 2. Only one JSON attribute can be appended.
  */
 public class UmdExtendedJsonAccessLogValve extends JsonAccessLogValve {
     private AccessLogElement keyValueElement;
@@ -37,6 +37,7 @@ public class UmdExtendedJsonAccessLogValve extends JsonAccessLogValve {
     public void setPattern(String pattern) {
         logger.debug("pattern='" + pattern + "'");
         if (pattern == null) {
+            // No pattern given -- delegate to superclass.
             super.setPattern(pattern);
             return;
         }
@@ -46,6 +47,7 @@ public class UmdExtendedJsonAccessLogValve extends JsonAccessLogValve {
 
         logger.debug("matcher.matches()=" + matcher.matches());
         if (!matcher.matches()) {
+            // No "#<key>:<value>#" pattern present -- delegate to superclass.
             this.keyValueElement = null;
             super.setPattern(pattern);
             return;
@@ -59,7 +61,7 @@ public class UmdExtendedJsonAccessLogValve extends JsonAccessLogValve {
         );
 
         // Strip out the "#key:value#" in case a shorthand pattern such as
-        // "common" or "combined" is being used
+        // "common" or "combined" is being used.
         String strippedPattern = pattern.replaceAll("\\s*\\#.*\\#\\s*", "");
         super.setPattern(strippedPattern);
     }
