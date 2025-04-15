@@ -68,7 +68,7 @@ public class UmdExtendedJsonAccessLogValveTest {
         // does where there is an empty format.
         assertEquals(
             """
-            {"logFile": "access.log"}
+            {"logFile":"access.log"}
             """,
             logOutput.toString()
         );
@@ -97,7 +97,7 @@ public class UmdExtendedJsonAccessLogValveTest {
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logFile": "access.log"}
+            {"host":"192.168.1.1","logFile":"access.log"}
             """,
             logOutput.toString()
         );
@@ -125,7 +125,7 @@ public class UmdExtendedJsonAccessLogValveTest {
 
         assertEquals(
             """
-            {"host":"192.168.1.1","statusCode":"200","size":"5123","logFile": "access.log"}
+            {"host":"192.168.1.1","statusCode":"200","size":"5123","logFile":"access.log"}
             """,
             logOutput.toString()
         );
@@ -157,7 +157,7 @@ public class UmdExtendedJsonAccessLogValveTest {
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","logFile": "access.log"}
+            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","logFile":"access.log"}
             """.formatted(requestLine),
             logOutput.toString()
         );
@@ -195,7 +195,7 @@ public class UmdExtendedJsonAccessLogValveTest {
 
         assertEquals(
             """
-            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","requestHeaders": {"Referer":"%s","User-Agent":"%s"},"logFile": "access.log"}
+            {"host":"192.168.1.1","logicalUserName":"-","user":"-","time":"[31/Dec/1969:19:00:00 -0500]","request":"%s","statusCode":"200","size":"5123","requestHeaders": {"Referer":"%s","User-Agent":"%s"},"logFile":"access.log"}
             """.formatted(requestLine, referer, userAgent),
             logOutput.toString()
         );

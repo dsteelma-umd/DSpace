@@ -57,7 +57,7 @@ public class UmdExtendedJsonAccessLogValve extends JsonAccessLogValve {
         String value = matcher.group("value");
         logger.debug("key='" + key + "', value='" + value + "'");
         this.keyValueElement = new StringElement(
-            wrap(key) + ": " + wrap(value)
+            wrap(key) + ":" + wrap(value)
         );
 
         // Strip out the "#key:value#" in case a shorthand pattern such as
